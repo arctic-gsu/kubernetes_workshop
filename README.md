@@ -45,7 +45,78 @@ Status: Downloaded newer image for docker/getting-started:latest
 
 <img width="411" alt="Screenshot 2024-03-15 at 1 40 13 PM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/54b171c6-9106-4d46-a997-a66de0e62f17">
 
+
 need remote desktop:
 k8s-ctrls04.rs.gsu.edu:82
 you should land into Docker getting started page
+
+write Dockerfile:
+```
+hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ cat Dockerfile 
+FROM node:18-alpine
+WORKDIR /app
+COPY . .
+RUN yarn install --production
+CMD ["node", "src/index.js"]
+```
+write compose file
+```
+hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ cat compose.yaml 
+services:
+  app:
+    image: node:18-alpine 
+    command: sh -c "yarn install && yarn run dev"
+    ports:
+      - 3000:3000
+    working_dir: /app
+    volumes:
+      -  ./:/app
+    networks:
+      - mynet
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: secret
+      MYSQL_DB: todos
+
+
+  mysql:
+    image: mysql:8.0
+    volumes:
+      - todo-mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: secret 
+      MYSQL_DATABASE: todos
+    networks:
+      - mynet
+
+
+volumes:
+  todo-mysql-data:
+
+networks:
+  mynet:
+```
+
+build the compose file:
+```
+docker compose up -d --build
+```
+you should see
+
+[+] Running 2/2
+ ⠿ Container app-mysql-1  Running                                                                                                                                                                                                                         
+ ⠿ Container app-app-1    Started   
+
+verify using docker compose ps
+```
+hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ sudo docker compose ps
+NAME                IMAGE               COMMAND                  SERVICE             CREATED             STATUS              PORTS
+app-app-1           node:18-alpine      "docker-entrypoint.s…"   app                 41 minutes ago      Up About a minute   0.0.0.0:3000->3000/tcp, :::3000->3000/tcp
+app-mysql-1         mysql:8.0           "docker-entrypoint.s…"   mysql               41 minutes ago      Up 41 minutes       3306/tcp, 33060/tcp
+```
+it shows backend and database, mysql is database and node is backend
+
+
+
 
