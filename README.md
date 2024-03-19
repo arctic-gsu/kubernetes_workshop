@@ -160,6 +160,30 @@ k8s-ctrls02   Ready    <none>          32d    v1.26.0
 k8s-ctrls03   Ready    <none>          382d   v1.26.0
 k8s-ctrls04   Ready    control-plane   437d   v1.26.0
 ```
+kubectl is a command talking to kubernetes api server (simple way to run docker image in kubernetes)
+
+get pods:
+```
+hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ kubectl get po
+NAME                                                READY   STATUS             RESTARTS       AGE
+todolist-app                                        0/1     ImagePullBackOff   0              72s
+```
+if you ready status is 0/1, it failed, check if you have docker hub login credentials correct, and also if you have pushed and used correct versions
+sudo docker build -t srutsth/todo:1.0 .
+sudo docker run -d -p 3000:3000 srutsth/todo:1.0
+sudo docker push srutsth/todo:1.0
+
+run again, 
+hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ kubectl run --image=srutsth/todo:1.0 todo-app-1 --port=3000
+pod/todo-app-1 created
+
+then check again,
+hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ kubectl get po
+NAME                                                READY   STATUS             RESTARTS       AGE
+todo-app-1                                          1/1     Running            0              72s
+
+
+
 
 
 
