@@ -132,6 +132,37 @@ http://k8s-ctrls04.rs.gsu.edu:3000/
 If you refresh , the list in todo will be there, as we are mounting volume
 ![Screenshot 2024-03-19 at 1 16 54 PM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/444ccb16-fe74-43fb-93a2-7ef5316bf726)
 
+Now, we have container 1, getting started, always wanted to keep up
+
+and app is in another container which can be accessed through port 3000
+![Screenshot 2024-03-19 at 2 28 39 PM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/d551bbc5-9d94-4f9b-90c2-22bd89f705ab)
+
+If we want to run hte same application in kubernetes:
+In docker we have containers where our application is running, but in kubernetes we have pods where we can have one or more containers(container is inside a pod)
+
+![Screenshot 2024-03-19 at 2 32 13 PM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/9c92f555-6978-4e4f-b1b4-2cd08a88efa2)
+
+running docker image in kubernetes:
+```
+kubectl run --image=srutsth/todo todolist-app --port=3000
+```
+
+k8s-ctrls02, k8s-ctrls03, k8s-ctrls04: these are our kubernetes clusters so it has kubernetes already installed in it.
+
+checking kubectl versions and nodes
+```
+hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ kubectl version
+Kustomize Version: v4.5.7
+
+hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ kubectl get nodes
+NAME          STATUS   ROLES           AGE    VERSION
+k8s-ctrls02   Ready    <none>          32d    v1.26.0
+k8s-ctrls03   Ready    <none>          382d   v1.26.0
+k8s-ctrls04   Ready    control-plane   437d   v1.26.0
+```
+
+
+
 
 
 
