@@ -184,9 +184,35 @@ todo-app-1                                          1/1     Running            0
 
 
 
+### Master node and Worker Node
 
+#### Master components:
+Kube Scheduler: identifies right node to place a container, based on container resource requirement, also looks at policy and contraints, tolerations etc
+ETCD Cluster: Stores whicih container is on which ships, when was it loaded etc. Its a Databse under master node. High availability key value store
 
+Controllers: 
+Node Controllers - Takes care of Nodes, responsible for onboarding new nodes on a cluster, availability of nodes
+Replica controller - ensures container are running at all times
+Controller manager - manages all these controllers
 
+Kube API Server:
+Primary management component of k8s
+Orchestrates all operations within a cluster
+
+check components of master node
+```
+hpcshruti@k8s-ctrls04:~$ kubectl get componentstatus
+Warning: v1 ComponentStatus is deprecated in v1.19+
+NAME                 STATUS    MESSAGE                         ERROR
+scheduler            Healthy   ok                              
+controller-manager   Healthy   ok                              
+etcd-0               Healthy   {"health":"true","reason":""}   
+```
+
+#### Worker components:
+Manages all activities
+Sending reports about the status of the worker node and containers to master nodes
+Known as kubelet and is present in each node od the cluster, Listen to API server, and deploy, destroys containers
 
 
 
