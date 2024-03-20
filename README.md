@@ -212,7 +212,24 @@ etcd-0               Healthy   {"health":"true","reason":""}
 #### Worker components:
 Manages all activities
 Sending reports about the status of the worker node and containers to master nodes
-Known as kubelet and is present in each node od the cluster, Listen to API server, and deploy, destroys containers
+Known as kubelet and is present in each node of the cluster, Listen to API server, and deploy, destroys containers
+KubeAPI server fetches periodic report from kubelet to monitor status of nodes and continer int hem
+
+API Server is like gatekeeper, which is trying to understand status of server
+
+API Serever is always interacted whenever we use kubectl command
+
+
+Now, how frontend talks to backend/mysql? Kubeproxy helps
+If someone from outside wantes to access cluster then kube proxy does it
+
+
+Pods:
+Scheduling unit of kubernetes(Elementary component)
+Runs one or more containers
+
+Kubernetes Cluster Architecture
+![Screenshot 2024-03-20 at 11 06 45 AM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/2e001376-e22c-472a-b701-714b249dfef2)
 
 
 
