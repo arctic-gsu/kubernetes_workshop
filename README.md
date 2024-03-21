@@ -1,47 +1,56 @@
 # Kubernetes:
 
-Open source container orchestration framework, developed by google
-Manage containers, i.e. help manage application with 100-1000's of containers with various environments
+Open source container orchestration framework, developed by google </br>
+Manage containers, i.e. help manage application with 100-1000's of containers with various environments </br>
 
-##### What problems does kubernetes solve? What are the task of an orchestration tool?
+#### What problems does kubernetes solve? What are the task of an orchestration tool?
 
-Rise of microservices caused rise of container technologies, like mysql, website
-![Screenshot 2024-03-21 at 2 42 12 PM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/c3fa43b1-916e-4e89-896f-ad06871c8a8c)
-Managing those containers across multiple environment is difficult, so these needs container orchestration technologies
+Rise of microservices caused rise of container technologies. Managing those containers across multiple environment is difficult, so these needs container orchestration technologies. </br>
+<img src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/c3fa43b1-916e-4e89-896f-ad06871c8a8c" width="300">
 
-features:
+### Features:
 1. High availability or no downtime
 2. Scalibility or high performance
 3. Disaster recovery - backup and restore - server explode, data missing, then this system must have some technology to store its latest snapshot
 
-## kubenetes architecture
-It has atleast one master node and other worker nodes
-worker nodes has kubelet process, which makes it possible for cluster to comunication and running application processes
-workers have different number of containers
+## Kubenetes Architecture
+- It has atleast one master node and other are worker nodes </br>
+- Worker nodes has kubelet process, which makes it possible for cluster to comunication and running application processes </br>
+- Workers have different number of containers </br>
+- Worker node is where your services are running
+- Master node runs several kubernetes processes that are absolutely necessary for running kubernetes clusters properly. 
 
-worker node is where your services are running
-
-master node runs several kubernetes processes that are absolutely necessary for running kubernetes clusters properly. 
-
-Kubernetes Cluster Architecture
+Figure showing Kubernetes Cluster Architecture
 ![Screenshot 2024-03-20 at 11 06 45 AM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/2e001376-e22c-472a-b701-714b249dfef2)
 
-### Master node and Worker Node
+### Master node and Worker Node</br>
 
-#### Master components:
-Kube Scheduler: identifies right node to place a container, based on container resource requirement, also looks at policy and contraints, tolerations etc
-ETCD Cluster: Stores whicih container is on which ships, when was it loaded etc. Its a Databse under master node. High availability key value store
+#### Master components:</br>
+Master node runs several kubernetes processes, that are essential for managing and running kubernetes cluster.
+Master node doesnot need that many resources as they are handling only handful functions. The master node consists of following:
 
-Controllers: 
-Node Controllers - Takes care of Nodes, responsible for onboarding new nodes on a cluster, availability of nodes
-Replica controller - ensures container are running at all times
-Controller manager - manages all these controllers
+##### Kube API Server:</br>
+- API is entry point to kubernetes cluster</br>
+- Primary management component of k8s</br>
+- Orchestrates all operations within a cluster</br>
+- API Server is like gatekeeper, which is trying to understand status of server
 
-Kube API Server:
-Primary management component of k8s
-Orchestrates all operations within a cluster
+##### Controllers: </br>
+- Controller manager - manages all these controllers, Keeps account of what is happening in the cluster, whether something needs to be repaired or maybe container dies and has to be restarted </br>
+- Node Controllers - Takes care of Nodes, responsible for onboarding new nodes on a cluster, availability of nodes</br>
+- Replica controller - ensures container are running at all times</br>
 
-check components of master node
+##### Kube Scheduler: </br>
+- Identifies right node to place a container, based on container resource requirement, also looks at policy and contraints, tolerations etc</br>
+  
+##### ETCD Cluster</br>
+- Its a Databse under master node. High availability key value store. Holds the current state of the kubernetes cluster. Backup is made from these etcd snapshots.</br>
+
+#### Virtual network </br>
+- enables worker node, master node communication </br>
+
+
+Check components of master node
 ```
 hpcshruti@k8s-ctrls04:~$ kubectl get componentstatus
 Warning: v1 ComponentStatus is deprecated in v1.19+
@@ -52,46 +61,49 @@ etcd-0               Healthy   {"health":"true","reason":""}
 ```
 
 #### Worker components:
-Manages all activities
-Sending reports about the status of the worker node and containers to master nodes
-Known as kubelet and is present in each node of the cluster, Listen to API server, and deploy, destroys containers
-KubeAPI server fetches periodic report from kubelet to monitor status of nodes and continer int hem
+- Manages all activities, have higher workloads, acutally are much bigger and have more resources
+- Sending reports about the status of the worker node and containers to master nodes
 
-API Server is like gatekeeper, which is trying to understand status of server
+#### kubelet 
+- Is present in each node of the cluster, Listen to API server, and deploy, destroys containers
+- KubeAPI server fetches periodic report from kubelet to monitor status of nodes and continer in them
 
-API Serever is always interacted whenever we use kubectl command
+#### kubectl
+- API Server is like gatekeeper, which is trying to understand status of server
+- API Serever is always interacted whenever we use kubectl command
+- API Server is always interacted whenever we use kubectl command
 
+#### Kubeproxy 
+- Now, how frontend talks to backend/mysql? 
+- If someone from outside wantes to access cluster then kube proxy does it
 
-Now, how frontend talks to backend/mysql? Kubeproxy helps
-If someone from outside wantes to access cluster then kube proxy does it
-
-
-Pods:
-Scheduling unit of kubernetes(Elementary component)
-Runs one or more containers
-
-
-
-KubeAPI server fetches periodic report from kubelet to monitor status of nodes and continer int hem
-
-API Server is like gatekeeper, which is trying to understand status of server
-
-API Server is always interacted whenever we use kubectl command
-
-Now, how frontend talks to backend/mysql? Kubeproxy helps
-If someone from outside wantes to access cluster then kube proxy does it
-
+#### KubeAPI
+- KubeAPI server fetches periodic report from kubelet to monitor status of nodes and continer in them
 
 #### Pods:
-Scheduling unit of kubernetes(Elementary component)
-Runs one or more containers
-<img width="1033" alt="Screenshot 2024-03-21 at 3 11 36 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/bdf65dc1-d01c-4eee-92f3-f19ffc146907">
+- Scheduling unit of kubernetes(Elementary component)
+- Creates abstraction over containers
+- Usually 1 Application per Pod
+- Each Pod gets its own IP address
+- Runs one or more containers
+- are ephemeral, can die easily, if pod ran out of resources or anything, or application crashes, it will die, we will have to reconfigure ip address if pod dies and restarts :/
+<img width="500" alt="Screenshot 2024-03-21 at 3 11 36 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/bdf65dc1-d01c-4eee-92f3-f19ffc146907">
+
+#### Service:
+- Permanent IP address
+- Lifecycle of Pod and Service are not connected
+- Now, because of service, ip address will stay and we dont have to change it
+- Has 2 types of service, one is external service, and another is internal service but has ip as 124.41.501.2:8080, which is not good for developing application, ingress comes into play
+
+#### Ingress:
+- now url looks like myapp.com
+- so request first goes to ingress and then to the service
+<img width="200" height="300" alt="Screenshot 2024-03-21 at 3 11 36 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/09d56b00-e2aa-439b-b01b-ec1017f18e2d">
 
 
-
-Agenda;
+### Agenda;
 1. Docker basics
-2. 2 container 1 host communication, using docker compose - 2 difference services communication
+2. 2 container 1 host communication, using docker compose - 2 different services communication
 3. kubectl 
 4. kubenetes architecture
 5. kubeview
@@ -167,7 +179,8 @@ COPY . .
 RUN yarn install --production
 CMD ["node", "src/index.js"]
 ```
-## 2 container 1 host communication, using docker compose - 2 difference services communication
+
+## Two container one host communication, using docker compose - 2 different services communication
 
 #### making our app interact with the mysql service
 
@@ -242,7 +255,7 @@ Now, we have container 1, getting started, always wanted to keep up
 and app is in another container which can be accessed through port 3000
 ![Screenshot 2024-03-19 at 2 28 39 PM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/d551bbc5-9d94-4f9b-90c2-22bd89f705ab)
 
-If we want to run hte same application in kubernetes:
+##### We now want to run the same application in kubernetes:
 In docker we have containers where our application is running, but in kubernetes we have pods where we can have one or more containers(container is inside a pod)
 
 ![Screenshot 2024-03-19 at 2 32 13 PM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/9c92f555-6978-4e4f-b1b4-2cd08a88efa2)
@@ -276,10 +289,11 @@ NAME                                                READY   STATUS             R
 todolist-app                                        0/1     ImagePullBackOff   0              72s
 ```
 if you ready status is 0/1, it failed, check if you have docker hub login credentials correct, and also if you have pushed and used correct versions
+```
 sudo docker build -t srutsth/todo:1.0 .
 sudo docker run -d -p 3000:3000 srutsth/todo:1.0
 sudo docker push srutsth/todo:1.0
-
+```
 run again, 
 ```
 hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ kubectl run --image=srutsth/todo:1.0 todo-app-1 --port=3000
@@ -308,6 +322,7 @@ hpcshruti@k8s-ctrls04:~$ kubectl get svc todo-app
 NAME       TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
 todo-app   NodePort   10.110.225.48   <none>        3000:31313/TCP   2m54s
 ```
+goto k8s-ctrls04.rs.gsu.edu:31313 in your remote browser
 
 <img width="1792" alt="Screenshot 2024-03-21 at 4 16 33 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/55c51f8b-a83a-4656-b92c-89fa13520927">
 
@@ -402,7 +417,7 @@ node1   Ready    control-plane   22m     v1.27.2
 node2   Ready    <none>          2m12s   v1.27.2
 ```
 
-start nother 3rd node and do the same
+start another i.e. 3rd node and do the same
 now in node1, you should see:
 ```
 [node1 kubelabs]$ kubectl get nodes
@@ -432,23 +447,20 @@ left panel shows our 5 kubernetes cluster
 where node 1 is master and all other are worker nodes.
 
 
-## Pod Concepts:
+## Workflow of a Pod:
 
 <img width="851" alt="Screenshot 2024-03-21 at 5 09 18 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/706ca7ce-ca27-4e95-a3db-18c6a5985334">
-Pod is defined using json manifest
-Manifest file has decalred /desired state
-has container specs, networking specs and other additional infor
-basically kubectl applied the manifest and creates the pods
-API Server: kubectl send manifest to API server, API server validate manifests syntax and checks for any error
-Pod Scheduler: assigns pod to suitable worker node, scheduler takes account of resource, availability node affinity rule and scheduling constraints
-Container creation: assigned worker node recieves pods specification and initiates creating container insides the pod, it pulls the container images specified in the pod and starts the container
-Pod Status: pod goes through different status phases: pending, running, failed etc
-monitoring and logging: to track the status of the resources realted to the pod
 
-
-
-Every pod in the kubernetes cluster gets a ip address
-and different services use different ports
+- Pod is defined using json manifest <\br>
+- Manifest file has decalred/desired state and has container specs, networking specs and other additional information
+- Basically kubectl applies the manifest and creates the pods
+- API Server: kubectl send manifest to API server, API server validate manifests syntax and checks for any error
+- Pod Scheduler: assigns pod to suitable worker node, scheduler takes account of resource, availability node affinity rule and scheduling constraints
+- Container creation: assigned worker node recieves pods specification and initiates creating container insides the pod, it pulls the container images specified in the pod and starts the container
+- Pod Status: pod goes through different status phases: pending, running, failed etc
+- monitoring and logging: to track the status of the resources realted to the pod
+- Every pod in the kubernetes cluster gets a ip address
+- And different services use different ports
 
 Every pod can talk to another pod through this address
 ![Screenshot 2024-03-21 at 9 41 37 AM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/5f965654-0edb-4bac-8cd6-a3a264cf6405)
@@ -492,14 +504,15 @@ ns2                Active   54s
 ```
 you pod is under namespace ns2
 
-it doesnot appear in when you do kubectl get po
+it doesnot appear when you do "kubectl get po"
 
 ```
 hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl get po 
 NAME        READY   STATUS    RESTARTS   AGE
-todo-list   1/1     Running   0          2m5s
 
-but after you append command -n ns2, it shows:
+```
+but after you append command -n ns2, it shows, that is we have to give namespace:
+```
 hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl get po -n ns2
 NAME        READY   STATUS    RESTARTS   AGE
 todo-list   1/1     Running   0          2m5s
@@ -515,13 +528,13 @@ hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl get svc
 NAME                                                      TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)                      AGE
 todo-app                                                  NodePort       10.110.225.48    <none>          3000:31313/TCP               7h27m
 ```
-remember to put -n for namespace
+see our todo-list service is not showing up, remember to put -n for namespace
 ```
 hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl get svc -n ns2
 NAME        TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
 todo-list   NodePort   10.111.172.157   <none>        3000:32191/TCP   2m19s
 ```
-see that your port is listeing on 32191
+see that your port is listening on 32191
 goto http://k8s-ctrls04.rs.gsu.edu:32191/
 and you will see your app running
 
@@ -534,12 +547,38 @@ We will create a namespace ns3, create a Pod with two containers, the first name
 hpcshruti@k8s-ctrls04:~/kubenetes_dir$ touch multi_container.yaml
 touch: cannot touch 'multi_container.yaml': Permission denied
 hpcshruti@k8s-ctrls04:~/kubenetes_dir$ sudo touch multi_container.yaml
-hpcshruti@k8s-ctrls04:~/kubenetes_dir$ sudo nano multi_container.yaml 
+hpcshruti@k8s-ctrls04:~/kubenetes_dir$ sudo nano multi_container.yaml
+
+```
+write this to your multi_container.yaml file
+```
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns3
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: multi-container-pod
+  namespace: ns3
+spec:
+  containers:
+  - name: todo-list
+    image: srutsth/todo
+    ports:
+    - containerPort: 3000
+  - name: prometheus
+    image: prom/prometheus:v2.30.3
+    ports:
+    - containerPort: 9090
+```
+deploy this yaml file, check pod in ns3 namespace to see if both the containers inside the pod "multi-container-pod" are running, should be 2/2 if both are running
+```
 hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl apply -f multi_container.yaml 
 namespace/ns3 created
 pod/multi-container-pod created
 hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl get po -n ns3
 NAME                  READY   STATUS    RESTARTS   AGE
 multi-container-pod   2/2     Running   0          57m
-hpcshruti@k8s-ctrls04:~/kubenetes_dir$ 
 ```
