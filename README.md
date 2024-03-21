@@ -1,3 +1,94 @@
+# Kubernetes:
+
+Open source container orchestration framework, developed by google
+Manage containers, i.e. help manage application with 100-1000's of containers with various environments
+
+##### What problems does kubernetes solve? What are the task of an orchestration tool?
+
+Rise of microservices caused rise of container technologies, like mysql, website
+![Screenshot 2024-03-21 at 2 42 12 PM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/c3fa43b1-916e-4e89-896f-ad06871c8a8c)
+Managing those containers across multiple environment is difficult, so these needs container orchestration technologies
+
+features:
+1. High availability or no downtime
+2. Scalibility or high performance
+3. Disaster recovery - backup and restore - server explode, data missing, then this system must have some technology to store its latest snapshot
+
+## kubenetes architecture
+It has atleast one master node and other worker nodes
+worker nodes has kubelet process, which makes it possible for cluster to comunication and running application processes
+workers have different number of containers
+
+worker node is where your services are running
+
+master node runs several kubernetes processes that are absolutely necessary for running kubernetes clusters properly. 
+
+Kubernetes Cluster Architecture
+![Screenshot 2024-03-20 at 11 06 45 AM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/2e001376-e22c-472a-b701-714b249dfef2)
+
+### Master node and Worker Node
+
+#### Master components:
+Kube Scheduler: identifies right node to place a container, based on container resource requirement, also looks at policy and contraints, tolerations etc
+ETCD Cluster: Stores whicih container is on which ships, when was it loaded etc. Its a Databse under master node. High availability key value store
+
+Controllers: 
+Node Controllers - Takes care of Nodes, responsible for onboarding new nodes on a cluster, availability of nodes
+Replica controller - ensures container are running at all times
+Controller manager - manages all these controllers
+
+Kube API Server:
+Primary management component of k8s
+Orchestrates all operations within a cluster
+
+check components of master node
+```
+hpcshruti@k8s-ctrls04:~$ kubectl get componentstatus
+Warning: v1 ComponentStatus is deprecated in v1.19+
+NAME                 STATUS    MESSAGE                         ERROR
+scheduler            Healthy   ok                              
+controller-manager   Healthy   ok                              
+etcd-0               Healthy   {"health":"true","reason":""}   
+```
+
+#### Worker components:
+Manages all activities
+Sending reports about the status of the worker node and containers to master nodes
+Known as kubelet and is present in each node of the cluster, Listen to API server, and deploy, destroys containers
+KubeAPI server fetches periodic report from kubelet to monitor status of nodes and continer int hem
+
+API Server is like gatekeeper, which is trying to understand status of server
+
+API Serever is always interacted whenever we use kubectl command
+
+
+Now, how frontend talks to backend/mysql? Kubeproxy helps
+If someone from outside wantes to access cluster then kube proxy does it
+
+
+Pods:
+Scheduling unit of kubernetes(Elementary component)
+Runs one or more containers
+
+
+
+KubeAPI server fetches periodic report from kubelet to monitor status of nodes and continer int hem
+
+API Server is like gatekeeper, which is trying to understand status of server
+
+API Server is always interacted whenever we use kubectl command
+
+Now, how frontend talks to backend/mysql? Kubeproxy helps
+If someone from outside wantes to access cluster then kube proxy does it
+
+
+#### Pods:
+Scheduling unit of kubernetes(Elementary component)
+Runs one or more containers
+<img width="1033" alt="Screenshot 2024-03-21 at 3 11 36 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/bdf65dc1-d01c-4eee-92f3-f19ffc146907">
+
+
+
 Agenda;
 1. Docker basics
 2. 2 container 1 host communication, using docker compose - 2 difference services communication
@@ -220,68 +311,7 @@ todo-app   NodePort   10.110.225.48   <none>        3000:31313/TCP   2m54s
 
 <img width="1792" alt="Screenshot 2024-03-21 at 4 16 33 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/55c51f8b-a83a-4656-b92c-89fa13520927">
 
-## kubenetes architecture
-### Master node and Worker Node
 
-#### Master components:
-Kube Scheduler: identifies right node to place a container, based on container resource requirement, also looks at policy and contraints, tolerations etc
-ETCD Cluster: Stores whicih container is on which ships, when was it loaded etc. Its a Databse under master node. High availability key value store
-
-Controllers: 
-Node Controllers - Takes care of Nodes, responsible for onboarding new nodes on a cluster, availability of nodes
-Replica controller - ensures container are running at all times
-Controller manager - manages all these controllers
-
-Kube API Server:
-Primary management component of k8s
-Orchestrates all operations within a cluster
-
-check components of master node
-```
-hpcshruti@k8s-ctrls04:~$ kubectl get componentstatus
-Warning: v1 ComponentStatus is deprecated in v1.19+
-NAME                 STATUS    MESSAGE                         ERROR
-scheduler            Healthy   ok                              
-controller-manager   Healthy   ok                              
-etcd-0               Healthy   {"health":"true","reason":""}   
-```
-
-#### Worker components:
-Manages all activities
-Sending reports about the status of the worker node and containers to master nodes
-Known as kubelet and is present in each node of the cluster, Listen to API server, and deploy, destroys containers
-KubeAPI server fetches periodic report from kubelet to monitor status of nodes and continer int hem
-
-API Server is like gatekeeper, which is trying to understand status of server
-
-API Serever is always interacted whenever we use kubectl command
-
-
-Now, how frontend talks to backend/mysql? Kubeproxy helps
-If someone from outside wantes to access cluster then kube proxy does it
-
-
-Pods:
-Scheduling unit of kubernetes(Elementary component)
-Runs one or more containers
-
-Kubernetes Cluster Architecture
-![Screenshot 2024-03-20 at 11 06 45 AM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/2e001376-e22c-472a-b701-714b249dfef2)
-
-KubeAPI server fetches periodic report from kubelet to monitor status of nodes and continer int hem
-
-API Server is like gatekeeper, which is trying to understand status of server
-
-API Server is always interacted whenever we use kubectl command
-
-Now, how frontend talks to backend/mysql? Kubeproxy helps
-If someone from outside wantes to access cluster then kube proxy does it
-
-
-#### Pods:
-Scheduling unit of kubernetes(Elementary component)
-Runs one or more containers
-<img width="1033" alt="Screenshot 2024-03-21 at 3 11 36 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/bdf65dc1-d01c-4eee-92f3-f19ffc146907">
 
 ## Setting up 5 nodes kubernetes cluster:
 
@@ -500,7 +530,7 @@ and you will see your app running
 ### Multiple container in single pod:
 We will create a namespace ns3, create a Pod with two containers, the first named todo-list using a Docker image srutsth/todo and a second container based on prom/promethrus:v2.30.3 docker image and container exposed to port 9090
 
-
+```
 hpcshruti@k8s-ctrls04:~/kubenetes_dir$ touch multi_container.yaml
 touch: cannot touch 'multi_container.yaml': Permission denied
 hpcshruti@k8s-ctrls04:~/kubenetes_dir$ sudo touch multi_container.yaml
@@ -512,4 +542,4 @@ hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl get po -n ns3
 NAME                  READY   STATUS    RESTARTS   AGE
 multi-container-pod   2/2     Running   0          57m
 hpcshruti@k8s-ctrls04:~/kubenetes_dir$ 
-
+```
