@@ -1,4 +1,3 @@
-<img width="851" alt="Screenshot 2024-03-21 at 5 09 18 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/0b4db5c2-ed6f-46e8-9788-a4704d5f8b54">
 Agenda;
 1. Docker basics
 2. 2 container 1 host communication, using docker compose - 2 difference services communication
