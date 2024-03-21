@@ -174,14 +174,16 @@ sudo docker run -d -p 3000:3000 srutsth/todo:1.0
 sudo docker push srutsth/todo:1.0
 
 run again, 
+```
 hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ kubectl run --image=srutsth/todo:1.0 todo-app-1 --port=3000
 pod/todo-app-1 created
-
+```
 then check again,
+```
 hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ kubectl get po
 NAME                                                READY   STATUS             RESTARTS       AGE
 todo-app-1                                          1/1     Running            0              72s
-
+```
 
 
 ### Master node and Worker Node
@@ -237,39 +239,42 @@ API Server is like gatekeeper, which is trying to understand status of server
 
 API Server is always interacted whenever we use kubectl command
 
-
 Now, how frontend talks to backend/mysql? Kubeproxy helps
 If someone from outside wantes to access cluster then kube proxy does it
 
 
-Pods:
+#### Pods:
 Scheduling unit of kubernetes(Elementary component)
 Runs one or more containers
 <img width="1033" alt="Screenshot 2024-03-21 at 3 11 36 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/bdf65dc1-d01c-4eee-92f3-f19ffc146907">
 
 open https://labs.play-with-k8s.com/ and start an instance
-
+```
 git clone https://github.com/collabnix/kubelabs.git
+```
 
+look into bootstrap.sh
+```
 [node1 kubelabs]$ cat bootstrap.sh 
 ## Script to setup K8s Cluster
 
 kubeadm init --apiserver-advertise-address $(hostname -i) --pod-network-cidr 10.5.0.0/16
 kubectl apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml
-
+```
 explaining the command:
 ```
 [kubeadm init : initializes control plane in master node](https://github.com/collabnix/kubelabs/blob/master/kube101.md)
 ```
 
 establish netowrking 
+```
 [node1 kubelabs]$ kubectl apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml
 configmap/kube-router-cfg created
 daemonset.apps/kube-router created
 serviceaccount/kube-router created
 clusterrole.rbac.authorization.k8s.io/kube-router created
 clusterrolebinding.rbac.authorization.k8s.io/kube-router created
-
+```
 check token 
 ```
 kubeadm token list
@@ -278,16 +283,20 @@ TOKEN                     TTL         EXPIRES                USAGES             
 ```
 
 do in node 1:
+```
 token create --print-join-command --ttl 30m
 kubeadm join 192.168.0.18:6443 --token j12itj.s873eteysrd8we2y --discovery-token-ca-cert-hash sha256:c78cb3840531be0deea863ae7c9af3e16c20f4220835077d525451d893678cc1 
 it will show RTNETLINK answers: File exists in master nodes
+```
 
 copy and paste in all worker nodes
+```
 kubeadm join 192.168.0.18:6443 --token j12itj.s873eteysrd8we2y --discovery-token-ca-cert-hash sha256:c78cb3840531be0deea863ae7c9af3e16c20f4220835077d525451d893678cc1 
 it will Initializing machine ID from random generator in worker nodes
+```
 
 now in your node1 do:  kubectl get nodes
- ```
+```
 [node1 kubelabs]$ kubectl get nodes
 NAME    STATUS   ROLES           AGE     VERSION
 node1   Ready    control-plane   22m     v1.27.2
@@ -296,11 +305,13 @@ node2   Ready    <none>          2m12s   v1.27.2
 
 start nother 3rd node and do the same
 now in node1, you should see:
+```
 [node1 kubelabs]$ kubectl get nodes
 NAME    STATUS   ROLES           AGE     VERSION
 node1   Ready    control-plane   24m     v1.27.2
 node2   Ready    <none>          3m45s   v1.27.2
 node3   Ready    <none>          30s     v1.27.2
+```
 
 Likewise do it for 4th and 5th node. 
 Now you have 5 nodes kubernetes cluster
