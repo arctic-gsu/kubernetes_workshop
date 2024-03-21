@@ -497,5 +497,19 @@ and you will see your app running
 
 <img width="1790" alt="Screenshot 2024-03-21 at 11 58 30 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/14df0d79-90e4-4e6e-af48-c85428691818">
 
+### Multiple container in single pod:
+We will create a namespace ns3, create a Pod with two containers, the first named todo-list using a Docker image srutsth/todo and a second container based on prom/promethrus:v2.30.3 docker image and container exposed to port 9090
 
+
+hpcshruti@k8s-ctrls04:~/kubenetes_dir$ touch multi_container.yaml
+touch: cannot touch 'multi_container.yaml': Permission denied
+hpcshruti@k8s-ctrls04:~/kubenetes_dir$ sudo touch multi_container.yaml
+hpcshruti@k8s-ctrls04:~/kubenetes_dir$ sudo nano multi_container.yaml 
+hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl apply -f multi_container.yaml 
+namespace/ns3 created
+pod/multi-container-pod created
+hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl get po -n ns3
+NAME                  READY   STATUS    RESTARTS   AGE
+multi-container-pod   2/2     Running   0          57m
+hpcshruti@k8s-ctrls04:~/kubenetes_dir$ 
 
