@@ -185,6 +185,25 @@ NAME                                                READY   STATUS             R
 todo-app-1                                          1/1     Running            0              72s
 ```
 
+running image on kubernetes:
+```
+hpcshruti@k8s-ctrls04:~$ kubectl expose pod todo-app --type=NodePort --port=3000
+service/todo-app exposed
+```
+
+check the port:
+```
+kubectl get svc todo-app
+```
+This command will show you the details of the service. Look for the "Port(s)" column; it will show something like 3000:XXXXX, where XXXXX is the node port assigned to your service. This is the port you will use to access your application from outside the cluster.
+```
+hpcshruti@k8s-ctrls04:~$ kubectl get svc todo-app
+NAME       TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+todo-app   NodePort   10.110.225.48   <none>        3000:31313/TCP   2m54s
+```
+
+<img width="1792" alt="Screenshot 2024-03-21 at 4 16 33 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/55c51f8b-a83a-4656-b92c-89fa13520927">
+
 
 ### Master node and Worker Node
 
