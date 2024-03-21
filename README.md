@@ -14,7 +14,7 @@ A containerization journey
 3. best pratices
 4. deploying into k8s
 
-Docker basics:
+### Docker basics:
 <img width="1070" alt="Screenshot 2024-03-15 at 1 41 53 PM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/565d7040-c9ad-4e5d-8098-6fc19745a6ce">
 
 command
@@ -45,12 +45,29 @@ Status: Downloaded newer image for docker/getting-started:latest
 
 <img width="411" alt="Screenshot 2024-03-15 at 1 40 13 PM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/54b171c6-9106-4d46-a997-a66de0e62f17">
 
+#### check the app in browser
 
-need remote desktop:
+[need remote desktop]
+```
 k8s-ctrls04.rs.gsu.edu:82
+```
 you should land into Docker getting started page
+```
+http://k8s-ctrls04.rs.gsu.edu:82/tutorial/
+```
 
-write Dockerfile:
+
+checking in browser
+![Screenshot 2024-03-19 at 1 15 38 PM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/b337a400-92bd-4c39-8108-ee268c7c04bc)
+
+
+#### get the app
+```
+wget http://localhost:82/assests/app.zip
+```
+
+#### containerizing our application
+moving app into kubenetes_dir and a Dockerfile inside app:
 ```
 hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ cat Dockerfile 
 FROM node:18-alpine
@@ -59,6 +76,9 @@ COPY . .
 RUN yarn install --production
 CMD ["node", "src/index.js"]
 ```
+
+#### making our app interact with the mysql service
+
 write compose file
 ```
 hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ cat compose.yaml 
@@ -116,14 +136,8 @@ app-app-1           node:18-alpine      "docker-entrypoint.s…"   app          
 app-mysql-1         mysql:8.0           "docker-entrypoint.s…"   mysql               41 minutes ago      Up 41 minutes       3306/tcp, 33060/tcp
 ```
 it shows backend and database, mysql is database and node is backend
-document is running in:
-```
-http://k8s-ctrls04.rs.gsu.edu:82/tutorial/
-```
 
 
-checking in browser
-![Screenshot 2024-03-19 at 1 15 38 PM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/b337a400-92bd-4c39-8108-ee268c7c04bc)
 
 and mysql is running in 
 ```
@@ -267,15 +281,21 @@ Scheduling unit of kubernetes(Elementary component)
 Runs one or more containers
 <img width="1033" alt="Screenshot 2024-03-21 at 3 11 36 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/bdf65dc1-d01c-4eee-92f3-f19ffc146907">
 
+#### 5 nodes kubernetes cluster:
+
 open https://labs.play-with-k8s.com/ and start an instance
 ```
 git clone https://github.com/collabnix/kubelabs.git
 ```
 
+
+
+## Script to setup K8s Cluster
+
 look into bootstrap.sh
 ```
-[node1 kubelabs]$ cat bootstrap.sh 
-## Script to setup K8s Cluster
+[node1 kubelabs]$ cat bootstrap.sh
+````
 
 kubeadm init --apiserver-advertise-address $(hostname -i) --pod-network-cidr 10.5.0.0/16
 kubectl apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml
