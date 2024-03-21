@@ -1,3 +1,4 @@
+<img width="851" alt="Screenshot 2024-03-21 at 5 09 18 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/0b4db5c2-ed6f-46e8-9788-a4704d5f8b54">
 Agenda;
 1. Docker basics
 2. 2 container 1 host communication, using docker compose - 2 difference services communication
@@ -403,6 +404,22 @@ where node 1 is master and all other are worker nodes.
 
 
 ## Pod Concepts:
+
+<img width="851" alt="Screenshot 2024-03-21 at 5 09 18 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/706ca7ce-ca27-4e95-a3db-18c6a5985334">
+Pod is defined using json manifest
+Manifest file has decalred /desired state
+has container specs, networking specs and other additional infor
+basically kubectl applied the manifest and creates the pods
+API Server: kubectl send manifest to API server, API server validate manifests syntax and checks for any error
+Pod Scheduler: assigns pod to suitable worker node, scheduler takes account of resource, availability node affinity rule and scheduling constraints
+Container creation: assigned worker node recieves pods specification and initiates creating container insides the pod, it pulls the container images specified in the pod and starts the container
+Pod Status: pod goes through different status phases: pending, running, failed etc
+monitoring and logging: to track the status of the resources realted to the pod
+
+
+
+
+
 
 
 
