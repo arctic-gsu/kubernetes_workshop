@@ -315,3 +315,14 @@ node3   Ready    <none>          30s     v1.27.2
 
 Likewise do it for 4th and 5th node. 
 Now you have 5 nodes kubernetes cluster
+
+After 5 nodes creation:
+```
+[node1 kubelabs]$ kubectl get nodes
+NAME    STATUS     ROLES           AGE     VERSION
+node1   Ready      control-plane   28m     v1.27.2
+node2   Ready      <none>          7m43s   v1.27.2
+node3   Ready      <none>          4m28s   v1.27.2
+node4   NotReady   <none>          8s      v1.27.2
+node5   NotReady   <none>          4s      v1.27.2
+```
