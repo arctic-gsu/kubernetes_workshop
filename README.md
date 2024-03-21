@@ -417,8 +417,85 @@ monitoring and logging: to track the status of the resources realted to the pod
 
 
 
+Every pod in the kubernetes cluster gets a ip address
+and different services use different ports
 
+Every pod can talk to another pod through this address
+![Screenshot 2024-03-21 at 9 41 37 AM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/5f965654-0edb-4bac-8cd6-a3a264cf6405)
 
+Intra pod communication:
+When multiple container running inside a pod, they share same namespace and communicate using localhost.
+
+Pod manifest file;
+
+create a manifest file and name it manifest.yaml
+```
+apiVersion:v1
+kind: Namespace
+metadata:
+ name: ns2
+---
+apiVersion:v1
+kind:Pod
+metadata:
+ name: todo-list
+ namespace: ns2
+spec:
+ containers:
+ - name: todo-list
+   image: srutsth/todo
+```
+apply the manifest file
+```
+hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl apply -f manifest.yaml 
+namespace/ns2 created
+pod/todo-list created
+```
+check what are inside your namespace
+```
+check namespace:
+kubectl get ns
+
+output:
+NAME               STATUS   AGE
+ns2                Active   54s
+```
+you pod is under namespace ns2
+
+it doesnot appear in when you do kubectl get po
+
+```
+hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl get po 
+NAME        READY   STATUS    RESTARTS   AGE
+todo-list   1/1     Running   0          2m5s
+
+but after you append command -n ns2, it shows:
+hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl get po -n ns2
+NAME        READY   STATUS    RESTARTS   AGE
+todo-list   1/1     Running   0          2m5s
+```
+expose port
+```
+hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl expose pod todo-list -n ns2 --type=NodePort --port=3000 --selector=app=todo-list
+service/todo-list exposed
+```
+look for services
+```
+hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl get svc
+NAME                                                      TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)                      AGE
+todo-app                                                  NodePort       10.110.225.48    <none>          3000:31313/TCP               7h27m
+```
+remember to put -n for namespace
+```
+hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl get svc -n ns2
+NAME        TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+todo-list   NodePort   10.111.172.157   <none>        3000:32191/TCP   2m19s
+```
+see that your port is listeing on 32191
+goto http://k8s-ctrls04.rs.gsu.edu:32191/
+and you will see your app running
+
+<img width="1790" alt="Screenshot 2024-03-21 at 11 58 30 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/14df0d79-90e4-4e6e-af48-c85428691818">
 
 
 
