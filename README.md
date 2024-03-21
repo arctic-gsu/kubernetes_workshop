@@ -281,7 +281,7 @@ Scheduling unit of kubernetes(Elementary component)
 Runs one or more containers
 <img width="1033" alt="Screenshot 2024-03-21 at 3 11 36 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/bdf65dc1-d01c-4eee-92f3-f19ffc146907">
 
-#### 5 nodes kubernetes cluster:
+### 5 nodes kubernetes cluster:
 
 open https://labs.play-with-k8s.com/ and start an instance
 ```
@@ -290,7 +290,7 @@ git clone https://github.com/collabnix/kubelabs.git
 
 
 
-## Script to setup K8s Cluster
+#### Script to setup K8s Clusters
 
 look into bootstrap.sh
 ```
