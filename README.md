@@ -1,20 +1,20 @@
 Agenda;
-1. containerization - docker
-2. 2 container 1 host communication
-3. docker compose - 2 difference services communication
-4. kubectl
-5. kubenetes architecture
-6. kubeview
+1. Docker basics
+2. 2 container 1 host communication, using docker compose - 2 difference services communication
+3. kubectl 
+4. kubenetes architecture
+5. kubeview
+6. Setting up 5 nodes kubernetes cluster
+7. Pod Concepts:
+    1. Pod Deployment
+    2. Multi Container
+    3. Pod Networking
+    4. Inter-Pod and Intra Pod Networking
+    5. Pod Lifecycle
+    6. Pod Manifest File
+   
 
-
-A containerization journey
-
-1. containerize a single app
-2. run multicontainer application
-3. best pratices
-4. deploying into k8s
-
-### Docker basics:
+## Docker basics:
 <img width="1070" alt="Screenshot 2024-03-15 at 1 41 53 PM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/565d7040-c9ad-4e5d-8098-6fc19745a6ce">
 
 command
@@ -76,6 +76,7 @@ COPY . .
 RUN yarn install --production
 CMD ["node", "src/index.js"]
 ```
+## 2 container 1 host communication, using docker compose - 2 difference services communication
 
 #### making our app interact with the mysql service
 
@@ -138,7 +139,6 @@ app-mysql-1         mysql:8.0           "docker-entrypoint.s…"   mysql        
 it shows backend and database, mysql is database and node is backend
 
 
-
 and mysql is running in 
 ```
 http://k8s-ctrls04.rs.gsu.edu:3000/
@@ -156,6 +156,8 @@ In docker we have containers where our application is running, but in kubernetes
 
 ![Screenshot 2024-03-19 at 2 32 13 PM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/9c92f555-6978-4e4f-b1b4-2cd08a88efa2)
 
+
+## kubectl
 running docker image in kubernetes:
 ```
 kubectl run --image=srutsth/todo todolist-app --port=3000
@@ -218,7 +220,7 @@ todo-app   NodePort   10.110.225.48   <none>        3000:31313/TCP   2m54s
 
 <img width="1792" alt="Screenshot 2024-03-21 at 4 16 33 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/55c51f8b-a83a-4656-b92c-89fa13520927">
 
-
+## kubenetes architecture
 ### Master node and Worker Node
 
 #### Master components:
@@ -281,7 +283,7 @@ Scheduling unit of kubernetes(Elementary component)
 Runs one or more containers
 <img width="1033" alt="Screenshot 2024-03-21 at 3 11 36 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/bdf65dc1-d01c-4eee-92f3-f19ffc146907">
 
-### 5 nodes kubernetes cluster:
+## Setting up 5 nodes kubernetes cluster:
 
 open https://labs.play-with-k8s.com/ and start an instance
 ```
@@ -289,14 +291,9 @@ git clone https://github.com/collabnix/kubelabs.git
 ```
 
 
-
-#### Script to setup K8s Clusters
-
 look into bootstrap.sh
 ```
 [node1 kubelabs]$ cat bootstrap.sh
-````
-
 kubeadm init --apiserver-advertise-address $(hostname -i) --pod-network-cidr 10.5.0.0/16
 kubectl apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml
 ```
@@ -328,11 +325,44 @@ kubeadm join 192.168.0.18:6443 --token j12itj.s873eteysrd8we2y --discovery-token
 it will show RTNETLINK answers: File exists in master nodes
 ```
 
-copy and paste in all worker nodes
+copy and paste in all worker nodes. in the left side you will see, add instance, click on it and your new instance will be started
 ```
-kubeadm join 192.168.0.18:6443 --token j12itj.s873eteysrd8we2y --discovery-token-ca-cert-hash sha256:c78cb3840531be0deea863ae7c9af3e16c20f4220835077d525451d893678cc1 
-it will Initializing machine ID from random generator in worker nodes
+[node2 ~]$ kubeadm join 192.168.0.18:6443 --token j12itj.s873eteysrd8we2y --discovery-token-ca-cert-hash sha256:c78cb3840531be0deea863ae7c9af3e16c20f4220835077d525451d893678cc1
 ```
+This will initializing machine ID from random generator.
+```
+Initializing machine ID from random generator.
+W0321 07:36:45.369746    2424 initconfiguration.go:120] Usage of CRI endpoints without URL scheme is deprecated and can cause kubelet errors in the future. Automatically prepending scheme "unix" to the "criSocket" with value "/run/docker/containerd/containerd.sock". Please update your configuration!
+[preflight] Running pre-flight checks
+        [WARNING Swap]: swap is enabled; production deployments should disable swap unless testing the NodeSwap feature gate of the kubelet
+[preflight] The system verification failed. Printing the output from the verification:
+KERNEL_VERSION: 4.4.0-210-generic
+OS: Linux
+CGROUPS_CPU: enabled
+CGROUPS_CPUACCT: enabled
+CGROUPS_CPUSET: enabled
+CGROUPS_DEVICES: enabled
+CGROUPS_FREEZER: enabled
+CGROUPS_MEMORY: enabled
+CGROUPS_PIDS: enabled
+CGROUPS_HUGETLB: enabled
+CGROUPS_BLKIO: enabled
+        [WARNING SystemVerification]: failed to parse kernel config: unable to load kernel module: "configs", output: "", err: exit status 1
+        [WARNING FileContent--proc-sys-net-bridge-bridge-nf-call-iptables]: /proc/sys/net/bridge/bridge-nf-call-iptables does not exist
+[preflight] Reading configuration from the cluster...
+[preflight] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Starting the kubelet
+[kubelet-start] Waiting for the kubelet to perform the TLS Bootstrap...
+
+This node has joined the cluster:
+* Certificate signing request was sent to apiserver and a response was received.
+* The Kubelet was informed of the new secure connection details.
+
+Run 'kubectl get nodes' on the control-plane to see this node join the cluster.
+```
+
 
 now in your node1 do:  kubectl get nodes
 ```
@@ -365,3 +395,14 @@ node3   Ready      <none>          4m28s   v1.27.2
 node4   NotReady   <none>          8s      v1.27.2
 node5   NotReady   <none>          4s      v1.27.2
 ```
+
+left panel shows our 5 kubernetes cluster
+
+<img width="318" alt="Screenshot 2024-03-21 at 4 39 28 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/563fe3d5-abea-407b-b4f6-c132ae23a496">
+where node 1 is master and all other are worker nodes.
+
+
+## Pod Concepts:
+
+
+
