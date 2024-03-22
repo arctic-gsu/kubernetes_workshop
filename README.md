@@ -175,22 +175,53 @@ checking in browser
 
 
 #### get the app
+Either clone this repo you will have app.zip file inside it: </br>
+so unzip it using 
+```
+unzip app.zip
+```
+
+OR if you have docker then do:
 ```
 wget http://localhost:82/assests/app.zip
 ```
+you must have the app folder now.
 
 #### containerizing our application
-moving app into kubenetes_dir and a Dockerfile inside app:
+moving app into kubenetes_dir and creating a Dockerfile inside app directory:
 ```
 hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ cat Dockerfile 
 FROM node:18-alpine
 WORKDIR /app
 COPY . .
 RUN yarn install --production
+EXPOSE 3000
 CMD ["node", "src/index.js"]
+```
+build docker
+```
+docker build -t basic_app:1.0
+```
+run docker 
+```
+docker run -d -p 3000:3000 basic_app:1.0
+```
+check whether your app is working or not in browser 
+
+<img width="1786" alt="Screenshot 2024-03-22 at 6 16 19 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/86ca8b9e-7ef4-4a7e-a20d-062871c6b792">
+
+kill the port 3000, otherwise it will conflict:
+```
+(base) sshrestha8@ARCs-MacBook-Pro app % docker ps
+
+CONTAINER ID   IMAGE           COMMAND                  CREATED          STATUS          PORTS                            NAMES
+3e394770bbe6   basic_app:1.0   "docker-entrypoint.s…"   25 seconds ago   Up 24 seconds   50/tcp, 0.0.0.0:3000->3000/tcp   practical_torvalds
+
+(base) sshrestha8@ARCs-MacBook-Pro app % docker stop 3e394770bbe6
 ```
 
 ## Two container one host communication, using docker compose - 2 different services communication
+
 
 #### making our app interact with the mysql service
 
@@ -238,11 +269,11 @@ build the compose file:
 docker compose up -d --build
 ```
 you should see
-
+```
 [+] Running 2/2
  ⠿ Container app-mysql-1  Running                                                                                                                                                                                                                         
  ⠿ Container app-app-1    Started   
-
+```
 verify using docker compose ps
 ```
 hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ sudo docker compose ps
@@ -271,13 +302,35 @@ In docker we have containers where our application is running, but in kubernetes
 ![Screenshot 2024-03-19 at 2 32 13 PM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/9c92f555-6978-4e4f-b1b4-2cd08a88efa2)
 
 
-## kubectl
-running docker image in kubernetes:
+Login into arcdocker, which is our container registry, username and password are your gsu username and password
 ```
-kubectl run --image=srutsth/todo todolist-app --port=3000
+(base) sshrestha8@ARCs-MacBook-Pro app % docker login arcdocker.rs.gsu.edu
+Authenticating with existing credentials...
+Login Succeeded
 ```
 
-k8s-ctrls02, k8s-ctrls03, k8s-ctrls04: these are our kubernetes clusters so it has kubernetes already installed in it.
+tag it and push it to arcdocker
+```
+(base) sshrestha8@ARCs-MacBook-Pro app % docker tag basic_app:1.0 arcdocker.rs.gsu.edu/basic_app:1.0
+(base) sshrestha8@ARCs-MacBook-Pro app % docker push arcdocker.rs.gsu.edu/basic_app:1.0
+The push refers to repository [arcdocker.rs.gsu.edu/basic_app]
+26d7ce54dd04: Pushed 
+2dc453868043: Pushed 
+e7f70e494320: Pushed 
+e79172ab9ca5: Pushed 
+884adc00e5c1: Pushed 
+d5d73638bf28: Pushed 
+d4fc045c9e3a: Pushed 
+1.0: digest: sha256:a7dd29f9698b56445ec124c9949256428c9afa92aebd819b6448734b2e1a18be size: 1787
+```
+
+
+## kubectl
+login to kubectl:
+```
+ssh -i private_key username@k8s-ctrls04.rs.gsu.edu
+```
+
 
 checking kubectl versions and nodes
 ```
@@ -290,59 +343,53 @@ k8s-ctrls02   Ready    <none>          32d    v1.26.0
 k8s-ctrls03   Ready    <none>          382d   v1.26.0
 k8s-ctrls04   Ready    control-plane   437d   v1.26.0
 ```
+k8s-ctrls02, k8s-ctrls03, k8s-ctrls04: these are our kubernetes clusters so it has kubernetes already installed in it.
+
+running our pushed docker image from arcdocker in kubernetes cluster and naming it basic-app-kube:
+```
+hpcshruti@k8s-ctrls04:~$ kubectl run --image=arcdocker.rs.gsu.edu/basic_app:1.0 basic-app-kube --port=3000
+pod/basic-app-kube created
+```
 kubectl is a command talking to kubernetes api server (simple way to run docker image in kubernetes)
 
 get pods:
 ```
 hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ kubectl get po
 NAME                                                READY   STATUS             RESTARTS       AGE
-todolist-app                                        0/1     ImagePullBackOff   0              72s
-```
+basic-app-kube                                      1/1     Running             0              35s```
 if you ready status is 0/1, it failed, check if you have docker hub login credentials correct, and also if you have pushed and used correct versions
 ```
-sudo docker build -t srutsth/todo:1.0 .
-sudo docker run -d -p 3000:3000 srutsth/todo:1.0
-sudo docker push srutsth/todo:1.0
+expose image pod on kubernetes:
 ```
-run again, 
-```
-hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ kubectl run --image=srutsth/todo:1.0 todo-app-1 --port=3000
-pod/todo-app-1 created
-```
-then check again,
-```
-hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ kubectl get po
-NAME                                                READY   STATUS             RESTARTS       AGE
-todo-app-1                                          1/1     Running            0              72s
-```
-
-running image on kubernetes:
-```
-hpcshruti@k8s-ctrls04:~$ kubectl expose pod todo-app --type=NodePort --port=3000
-service/todo-app exposed
+hpcshruti@k8s-ctrls04:~$ kubectl expose pod basic-app-kube --type=NodePort --port=3000
+service/basic-app-kube exposed
 ```
 
 check the port:
 ```
-kubectl get svc todo-app
+kubectl get svc basic-app-kube
 ```
 This command will show you the details of the service. Look for the "Port(s)" column; it will show something like 3000:XXXXX, where XXXXX is the node port assigned to your service. This is the port you will use to access your application from outside the cluster.
 ```
-hpcshruti@k8s-ctrls04:~$ kubectl get svc todo-app
-NAME       TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
-todo-app   NodePort   10.110.225.48   <none>        3000:31313/TCP   2m54s
+hpcshruti@k8s-ctrls04:~$ kubectl get svc basic-app-kube
+NAME               TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+basic-app-kube   NodePort   10.102.203.244   <none>        3000:32077/TCP   29s
 ```
-goto k8s-ctrls04.rs.gsu.edu:31313 in your remote browser
+goto k8s-ctrls04.rs.gsu.edu:32077 in your remote browser
 
-<img width="1792" alt="Screenshot 2024-03-21 at 4 16 33 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/55c51f8b-a83a-4656-b92c-89fa13520927">
+<img width="1786" alt="Screenshot 2024-03-22 at 7 38 20 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/a42b4bdd-044d-4154-b83e-6972b8fd9fb0">
 
 
 
-## Setting up 5 nodes kubernetes cluster:
+## Setup for kubeadmin
+
+#### Setting up 5 nodes kubernetes cluster:
 
 open https://labs.play-with-k8s.com/ and start an instance
 ```
-git clone https://github.com/collabnix/kubelabs.git
+[node1 ~]$ git clone https://github.com/collabnix/kubelabs.git
+
+[node1 ~]$ cd kubelabs
 ```
 
 
@@ -354,42 +401,63 @@ kubectl apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/m
 ```
 explaining the command:
 ```
-[kubeadm init : initializes control plane in master node](https://github.com/collabnix/kubelabs/blob/master/kube101.md)
+kubeadm init : initializes a Kubernetes control-plane node and execute the below phases
+
+The “init” command executes the following phases:
+
+preflight                    Run pre-flight checks
+kubelet-start                Write kubelet settings and (re)start the kubelet
+certs                        Certificate generation
+  /ca                          Generate the self-signed Kubernetes CA to provision identities for other Kubernetes components
+  /apiserver                   Generate the certificate for serving the Kubernetes API
+  /apiserver-kubelet-client    Generate the certificate for the API server to connect to kubelet
+  /front-proxy-ca              Generate the self-signed CA to provision identities for front proxy
+  /front-proxy-client          Generate the certificate for the front proxy client
+  /etcd-ca                     Generate the self-signed CA to provision identities for etcd
+  /etcd-server                 Generate the certificate for serving etcd
+  /etcd-peer                   Generate the certificate for etcd nodes to communicate with each other
+  /etcd-healthcheck-client     Generate the certificate for liveness probes to healthcheck etcd
+  /apiserver-etcd-client       Generate the certificate the apiserver uses to access etcd
+  /sa                          Generate a private key for signing service account tokens along with its public key
+kubeconfig                   Generate all kubeconfig files necessary to establish the control plane and the admin kubeconfig file
+  /admin                       Generate a kubeconfig file for the admin to use and for kubeadm itself
+  /kubelet                     Generate a kubeconfig file for the kubelet to use *only* for cluster bootstrapping purposes
+  /controller-manager          Generate a kubeconfig file for the controller manager to use
+  /scheduler                   Generate a kubeconfig file for the scheduler to use
+control-plane                Generate all static Pod manifest files necessary to establish the control plane
+  /apiserver                   Generates the kube-apiserver static Pod manifest
+  /controller-manager          Generates the kube-controller-manager static Pod manifest
+  /scheduler                   Generates the kube-scheduler static Pod manifest
+etcd                         Generate static Pod manifest file for local etcd
+  /local                       Generate the static Pod manifest file for a local, single-node local etcd instance
+upload-config                Upload the kubeadm and kubelet configuration to a ConfigMap
+  /kubeadm                     Upload the kubeadm ClusterConfiguration to a ConfigMap
+  /kubelet                     Upload the kubelet component config to a ConfigMap
+upload-certs                 Upload certificates to kubeadm-certs
+mark-control-plane           Mark a node as a control-plane
+bootstrap-token              Generates bootstrap tokens used to join a node to a cluster
+kubelet-finalize             Updates settings relevant to the kubelet after TLS bootstrap
+  /experimental-cert-rotation  Enable kubelet client certificate rotation
+addon                        Install required addons for passing Conformance tests
+  /coredns                     Install the CoreDNS addon to a Kubernetes cluster
+  /kube-proxy                  Install the kube-proxy addon to a Kubernetes cluster
 ```
 
-establish netowrking 
+initialize the master node:
 ```
-[node1 kubelabs]$ kubectl apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml
-configmap/kube-router-cfg created
-daemonset.apps/kube-router created
-serviceaccount/kube-router created
-clusterrole.rbac.authorization.k8s.io/kube-router created
-clusterrolebinding.rbac.authorization.k8s.io/kube-router created
-```
-check token 
-```
-kubeadm token list
-TOKEN                     TTL         EXPIRES                USAGES                   DESCRIPTION                                                EXTRA GROUPS
-6g3aej.kxqom616rhqivzkl   23h         2024-03-22T07:16:27Z   authentication,signing   The default bootstrap token generated by 'kubeadm init'.   system:bootstrappers:kubeadm:default-node-token
+kubeadm init --apiserver-advertise-address $(hostname -i) --pod-network-cidr 10.5.0.0/16
 ```
 
-do in node 1:
+look for kube join command and copy it, you will add this kube join to other worker nodes.
 ```
-token create --print-join-command --ttl 30m
-kubeadm join 192.168.0.18:6443 --token j12itj.s873eteysrd8we2y --discovery-token-ca-cert-hash sha256:c78cb3840531be0deea863ae7c9af3e16c20f4220835077d525451d893678cc1 
-it will show RTNETLINK answers: File exists in master nodes
+kubeadm join 192.168.0.13:6443 --token c6a5q8.zx11bw566y6lvoch \
+        --discovery-token-ca-cert-hash sha256:df10aae9e466eaf94e2cdbaf966976aae43cc067133ccab66d0c5b1f88a56a3d
 ```
-
-copy and paste in all worker nodes. in the left side you will see, add instance, click on it and your new instance will be started
+you should see below output after join in each node :
 ```
-[node2 ~]$ kubeadm join 192.168.0.18:6443 --token j12itj.s873eteysrd8we2y --discovery-token-ca-cert-hash sha256:c78cb3840531be0deea863ae7c9af3e16c20f4220835077d525451d893678cc1
-```
-This will initializing machine ID from random generator.
-```
-Initializing machine ID from random generator.
-W0321 07:36:45.369746    2424 initconfiguration.go:120] Usage of CRI endpoints without URL scheme is deprecated and can cause kubelet errors in the future. Automatically prepending scheme "unix" to the "criSocket" with value "/run/docker/containerd/containerd.sock". Please update your configuration!
+W0322 11:46:26.235363    2656 initconfiguration.go:120] Usage of CRI endpoints without URL scheme is deprecated and can cause kubelet errors in the future. Automatically prepending scheme "unix" to the "criSocket" with value "/run/docker/containerd/containerd.sock". Please update your configuration!
 [preflight] Running pre-flight checks
-        [WARNING Swap]: swap is enabled; production deployments should disable swap unless testing the NodeSwap feature gate of the kubelet
+        [WARNING FileAvailable--etc-kubernetes-kubelet.conf]: /etc/kubernetes/kubelet.conf already exists
 [preflight] The system verification failed. Printing the output from the verification:
 KERNEL_VERSION: 4.4.0-210-generic
 OS: Linux
@@ -403,6 +471,8 @@ CGROUPS_PIDS: enabled
 CGROUPS_HUGETLB: enabled
 CGROUPS_BLKIO: enabled
         [WARNING SystemVerification]: failed to parse kernel config: unable to load kernel module: "configs", output: "", err: exit status 1
+        [WARNING Port-10250]: Port 10250 is in use
+        [WARNING FileAvailable--etc-kubernetes-pki-ca.crt]: /etc/kubernetes/pki/ca.crt already exists
         [WARNING FileContent--proc-sys-net-bridge-bridge-nf-call-iptables]: /proc/sys/net/bridge/bridge-nf-call-iptables does not exist
 [preflight] Reading configuration from the cluster...
 [preflight] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
@@ -417,14 +487,41 @@ This node has joined the cluster:
 
 Run 'kubectl get nodes' on the control-plane to see this node join the cluster.
 ```
+check for nodes:
 
-
-now in your node1 do:  kubectl get nodes
 ```
 [node1 kubelabs]$ kubectl get nodes
-NAME    STATUS   ROLES           AGE     VERSION
-node1   Ready    control-plane   22m     v1.27.2
-node2   Ready    <none>          2m12s   v1.27.2
+NAME    STATUS     ROLES           AGE    VERSION
+node1   NotReady   control-plane   105s   v1.27.2
+node2   NotReady   <none>          11s    v1.27.2
+```
+
+check for service:
+```
+[node1 kubelabs]$ kubectl get svc
+NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   3m28s
+```
+
+Establish networking: for pod networking kuberouter needs to be installed. 
+```
+[node1 kubelabs]$ kubectl apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml
+configmap/kube-router-cfg created
+daemonset.apps/kube-router created
+serviceaccount/kube-router created
+clusterrole.rbac.authorization.k8s.io/kube-router created
+clusterrolebinding.rbac.authorization.k8s.io/kube-router created
+```
+
+do in node 1:
+```
+kubeadm join 192.168.0.18:6443 --token j12itj.s873eteysrd8we2y --discovery-token-ca-cert-hash sha256:c78cb3840531be0deea863ae7c9af3e16c20f4220835077d525451d893678cc1 
+it will show RTNETLINK answers: File exists in master nodes
+```
+
+copy and paste in all worker nodes. in the left side you will see, add instance, click on it and your new instance will be started
+```
+[node2 ~]$ kubeadm join 192.168.0.18:6443 --token j12itj.s873eteysrd8we2y --discovery-token-ca-cert-hash sha256:c78cb3840531be0deea863ae7c9af3e16c20f4220835077d525451d893678cc1
 ```
 
 start another i.e. 3rd node and do the same
@@ -482,20 +579,20 @@ Pod manifest file;
 
 create a manifest file and name it manifest.yaml
 ```
-apiVersion:v1
+apiVersion: v1
 kind: Namespace
 metadata:
  name: ns2
 ---
-apiVersion:v1
-kind:Pod
+apiVersion: v1
+kind: Pod
 metadata:
- name: todo-list
+ name: basic-app
  namespace: ns2
 spec:
  containers:
- - name: todo-list
-   image: srutsth/todo
+ - name: basic-app-container
+   image: arcdocker.rs.gsu.edu/basic_app:1.0
 ```
 apply the manifest file
 ```
@@ -518,34 +615,36 @@ it doesnot appear when you do "kubectl get po"
 
 ```
 hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl get po 
-NAME        READY   STATUS    RESTARTS   AGE
+NAME                                                READY   STATUS    RESTARTS   AGE
+basic-app-kube                                      1/1     Running   0              29m
 
 ```
-but after you append command -n ns2, it shows, that is we have to give namespace:
+Remember, this basic-app-kube is from before, but after you append command -n ns2, it shows, the recently create one "basic-app" that is under namespace ns2:
 ```
-hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl get po -n ns2
+hpcshruti@k8s-ctrls04:~/basic_app_folder$ kubectl get po -n ns2
 NAME        READY   STATUS    RESTARTS   AGE
-todo-list   1/1     Running   0          2m5s
+basic-app   1/1     Running   0          85s
+
 ```
 expose port
 ```
-hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl expose pod todo-list -n ns2 --type=NodePort --port=3000 --selector=app=todo-list
-service/todo-list exposed
+hpcshruti@k8s-ctrls04:~/basic_app_folder$ kubectl expose pod basic-app -n ns2 --type=NodePort --port=3000 --selector=app=basic-app
+service/basic-app exposed
 ```
 look for services
 ```
 hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl get svc
 NAME                                                      TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)                      AGE
-todo-app                                                  NodePort       10.110.225.48    <none>          3000:31313/TCP               7h27m
 ```
 see our todo-list service is not showing up, remember to put -n for namespace
 ```
-hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl get svc -n ns2
+hpcshruti@k8s-ctrls04:~/basic_app_folder$ kubectl get svc -n ns2
 NAME        TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
-todo-list   NodePort   10.111.172.157   <none>        3000:32191/TCP   2m19s
+basic-app   NodePort   10.99.124.83     <none>        3000:31541/TCP   26s
+
 ```
-see that your port is listening on 32191
-goto http://k8s-ctrls04.rs.gsu.edu:32191/
+see that your port is listening on 31541
+goto http://k8s-ctrls04.rs.gsu.edu:31541/
 and you will see your app running
 
 <img width="1790" alt="Screenshot 2024-03-21 at 11 58 30 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/14df0d79-90e4-4e6e-af48-c85428691818">
@@ -554,9 +653,6 @@ and you will see your app running
 We will create a namespace ns3, create a Pod with two containers, the first named todo-list using a Docker image srutsth/todo and a second container based on prom/promethrus:v2.30.3 docker image and container exposed to port 9090
 
 ```
-hpcshruti@k8s-ctrls04:~/kubenetes_dir$ touch multi_container.yaml
-touch: cannot touch 'multi_container.yaml': Permission denied
-hpcshruti@k8s-ctrls04:~/kubenetes_dir$ sudo touch multi_container.yaml
 hpcshruti@k8s-ctrls04:~/kubenetes_dir$ sudo nano multi_container.yaml
 
 ```
