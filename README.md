@@ -206,7 +206,7 @@ docker build -t basic_app:1.0
 ```
 run docker 
 ```
-docker run -d -p 3000:3000 basic_app:1.0
+docker run -d -p 3000:3000 basic_app:1.0 .
 ```
 check whether your app is working or not in browser 
 
