@@ -1,7 +1,9 @@
 # Kubernetes:
-
-Open source container orchestration framework, developed by google </br>
-Manage containers, i.e. help manage application with 100-1000's of containers with various environments </br>
+### What is container?
+A container is a lightweight package that contains an application's code, libraries, configuration files, and dependencies.
+### What is Kubernetes?
+- Open source container orchestration framework, developed by google </br>
+- Manages containers, i.e. help manage application with 100-1000's of containers with various environments </br>
 
 #### What problems does kubernetes solve? What are the task of an orchestration tool?
 
@@ -15,10 +17,10 @@ Rise of microservices caused rise of container technologies. Managing those cont
 
 ## Kubenetes Architecture
 - It has atleast one master node and other are worker nodes </br>
-- Worker nodes has kubelet process, which makes it possible for cluster to comunication and running application processes </br>
+- Worker nodes has kubelet process, which makes it possible for cluster to communicate and run application processes </br>
 - Workers have different number of containers </br>
 - Worker node is where your services are running
-- Master node runs several kubernetes processes that are absolutely necessary for running kubernetes clusters properly. 
+- Master node runs several kubernetes processes that are absolutely necessary for running kubernetes clusters properly
 
 Figure showing Kubernetes Cluster Architecture
 ![Screenshot 2024-03-20 at 11 06 45 AM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/2e001376-e22c-472a-b701-714b249dfef2)
@@ -27,13 +29,14 @@ Figure showing Kubernetes Cluster Architecture
 
 #### Master components:</br>
 Master node runs several kubernetes processes, that are essential for managing and running kubernetes cluster.
-Master node doesnot need that many resources as they are handling only handful functions. The master node consists of following:
+Master node doesnot need many resources as compared to worker nodes because they are handling only handful functions. The master node consists of following:
 
 ##### Kube API Server:</br>
 - API is entry point to kubernetes cluster</br>
 - Primary management component of k8s</br>
 - Orchestrates all operations within a cluster</br>
-- API Server is like gatekeeper, which is trying to understand status of server
+- API Server is like gatekeeper, which is trying to understand status of server, i.e. worker nodes can know the status of the server from API server
+- KubeAPI server fetches periodic report from kubelet to monitor status of nodes and containers in them
 
 ##### Controllers: </br>
 - Controller manager - manages all these controllers, Keeps account of what is happening in the cluster, whether something needs to be repaired or maybe container dies and has to be restarted </br>
@@ -65,20 +68,18 @@ etcd-0               Healthy   {"health":"true","reason":""}
 - Sending reports about the status of the worker node and containers to master nodes
 
 #### kubelet 
+- Kubelet is a node-level agent that helps with container management and orchestration in a Kubernetes cluster
 - Is present in each node of the cluster, Listen to API server, and deploy, destroys containers
-- KubeAPI server fetches periodic report from kubelet to monitor status of nodes and continer in them
+- KubeAPI server fetches periodic report from kubelet to monitor status of nodes and containers in them
 
 #### kubectl
+- Kubectl is a command-line tool that allows users to run commands against Kubernetes clusters
 - API Server is like gatekeeper, which is trying to understand status of server
-- API Serever is always interacted whenever we use kubectl command
 - API Server is always interacted whenever we use kubectl command
 
 #### Kubeproxy 
 - Now, how frontend talks to backend/mysql? 
-- If someone from outside wantes to access cluster then kube proxy does it
-
-#### KubeAPI
-- KubeAPI server fetches periodic report from kubelet to monitor status of nodes and continer in them
+- If someone from outside wants to access cluster then kube proxy does it
 
 #### Pods:
 - Scheduling unit of kubernetes(Elementary component)
@@ -86,7 +87,7 @@ etcd-0               Healthy   {"health":"true","reason":""}
 - Usually 1 Application per Pod
 - Each Pod gets its own IP address
 - Runs one or more containers
-- are ephemeral, can die easily, if pod ran out of resources or anything, or application crashes, it will die, we will have to reconfigure ip address if pod dies and restarts :/
+- Are ephemeral, can die easily, if pod ran out of resources or anything, or application crashes, it will die, we will have to reconfigure ip address if pod dies and if we have to restart
 <img width="500" alt="Screenshot 2024-03-21 at 3 11 36 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/bdf65dc1-d01c-4eee-92f3-f19ffc146907">
 
 #### Service:
@@ -94,7 +95,11 @@ etcd-0               Healthy   {"health":"true","reason":""}
 - Lifecycle of Pod and Service are not connected
 - Now, because of service, ip address will stay and we dont have to change it
 - Has 2 types of service, one is external service, and another is internal service but has ip as 124.41.501.2:8080, which is not good for developing application, ingress comes into play
-
+- Types of service:
+    - ClusterIP (default): Internal clients send requests to a stable internal IP address
+    - NodePort: Clients send requests to the IP address of a node on one or more nodePort values that are specified by the Service
+    - LoadBalancer: Clients send requests to the IP address of a network load balancer
+  
 #### Ingress:
 - now url looks like myapp.com
 - so request first goes to ingress and then to the service
