@@ -15,7 +15,7 @@ Rise of microservices caused rise of container technologies. Managing those cont
 2. Scalibility or high performance
 3. Disaster recovery - backup and restore - server explode, data missing, then this system must have some technology to store its latest snapshot
 
-## Kubenetes Architecture
+## Kubernetes Architecture
 - It has atleast one master node and other are worker nodes </br>
 - Worker nodes has kubelet process, which makes it possible for cluster to communicate and run application processes </br>
 - Workers have different number of containers </br>
