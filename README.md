@@ -125,14 +125,16 @@ etcd-0               Healthy   {"health":"true","reason":""}
 ## Docker basics:
 <img width="1070" alt="Screenshot 2024-03-15 at 1 41 53 PM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/565d7040-c9ad-4e5d-8098-6fc19745a6ce">
 
-command
+Install docker in your system and run the following command, goto localhost:82 a browser should open
 ```
 sudo docker run -d -p 82:80 docker/getting-started
 ```
-docker run: starting a container
-docker/getting-started: docker image
-82:80 host:port
+command description: 
+- docker run: starting a container
+- docker/getting-started: docker image
+- 82:80 host:port
 
+I am running in k8s cluster (docker with only sudo can run here)
 ```
 hpcshruti@k8s-ctrls04:~$ sudo docker run -d -p 82:80 docker/getting-started
 Unable to find image 'docker/getting-started:latest' locally
@@ -154,8 +156,11 @@ Status: Downloaded newer image for docker/getting-started:latest
 <img width="411" alt="Screenshot 2024-03-15 at 1 40 13 PM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/54b171c6-9106-4d46-a997-a66de0e62f17">
 
 #### check the app in browser
-
-[need remote desktop]
+[in local]
+```
+localhost:82
+```
+[in remote desktop]
 ```
 k8s-ctrls04.rs.gsu.edu:82
 ```
