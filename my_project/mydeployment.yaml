@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-project-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-project-app
+  template:
+    metadata:
+      labels:
+        app: my-project-app
+    spec:
+      containers:
+      - name: my-project-app-container
+        image: arcdocker.rs.gsu.edu/my_project:1.0 # Your private image
+        ports:
+        - containerPort: 5000
+      imagePullSecrets:
+      - name: myregistrysecret
