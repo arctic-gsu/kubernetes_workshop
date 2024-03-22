@@ -1,4 +1,21 @@
 # Kubernetes:
+
+Contents:
+1. What is container? What is kubernetes? Feature of Kubernetes
+2. Kubernetes Architecture
+3. Master node and Worker Node
+4. Master components and Worker components
+5. Docker basics
+6. Containerizing our application
+7. Two container one host communication, using docker compose - two different services communication
+8. Using docker image in kubernetes: kubectl
+9. Setup for kubeadmin
+10. Workflow of a Pod
+11. Multiple container in single pod
+12. Creating a ML Porject and Deploying in kubernetes
+
+## What is container? What is kubernetes? Feature of Kubernetes
+
 ### What is container?
 A container is a lightweight package that contains an application's code, libraries, configuration files, and dependencies.
 ### What is Kubernetes?
@@ -25,9 +42,9 @@ Rise of microservices caused rise of container technologies. Managing those cont
 Figure showing Kubernetes Cluster Architecture
 ![Screenshot 2024-03-20 at 11 06 45 AM](https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/2e001376-e22c-472a-b701-714b249dfef2)
 
-### Master node and Worker Node</br>
+## Master node and Worker Node</br>
 
-#### Master components:</br>
+### Master components:</br>
 Master node runs several kubernetes processes, that are essential for managing and running kubernetes cluster.
 Master node doesnot need many resources as compared to worker nodes because they are handling only handful functions. The master node consists of following:
 
@@ -63,7 +80,7 @@ controller-manager   Healthy   ok
 etcd-0               Healthy   {"health":"true","reason":""}   
 ```
 
-#### Worker components:
+### Worker components:
 - Manages all activities, have higher workloads, acutally are much bigger and have more resources
 - Sending reports about the status of the worker node and containers to master nodes
 
@@ -105,21 +122,6 @@ etcd-0               Healthy   {"health":"true","reason":""}
 - so request first goes to ingress and then to the service
 <img width="200" height="300" alt="Screenshot 2024-03-21 at 3 11 36 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/09d56b00-e2aa-439b-b01b-ec1017f18e2d">
 
-
-### Agenda;
-1. Docker basics
-2. 2 container 1 host communication, using docker compose - 2 different services communication
-3. kubectl 
-4. kubenetes architecture
-5. kubeview
-6. Setting up 5 nodes kubernetes cluster
-7. Pod Concepts:
-    1. Pod Deployment
-    2. Multi Container
-    3. Pod Networking
-    4. Inter-Pod and Intra Pod Networking
-    5. Pod Lifecycle
-    6. Pod Manifest File
    
 
 ## Docker basics:
@@ -187,7 +189,7 @@ wget http://localhost:82/assests/app.zip
 ```
 you must have the app folder now.
 
-#### containerizing our application
+## Containerizing our application
 moving app into kubenetes_dir and creating a Dockerfile inside app directory:
 ```
 hpcshruti@k8s-ctrls04:~/kubenetes_dir/app$ cat Dockerfile 
@@ -220,7 +222,7 @@ CONTAINER ID   IMAGE           COMMAND                  CREATED          STATUS 
 (base) sshrestha8@ARCs-MacBook-Pro app % docker stop 3e394770bbe6
 ```
 
-## Two container one host communication, using docker compose - 2 different services communication
+## Two container one host communication, using docker compose - two different services communication
 
 
 #### making our app interact with the mysql service
@@ -325,7 +327,7 @@ d4fc045c9e3a: Pushed
 ```
 
 
-## kubectl
+## Using docker image in kubernetes: kubectl
 login to kubectl:
 ```
 ssh -i private_key username@k8s-ctrls04.rs.gsu.edu
