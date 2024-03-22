@@ -451,7 +451,7 @@ where node 1 is master and all other are worker nodes.
 
 <img width="851" alt="Screenshot 2024-03-21 at 5 09 18 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/706ca7ce-ca27-4e95-a3db-18c6a5985334">
 
-- Pod is defined using json manifest <\br>
+- Pod is defined using json manifest </br>
 - Manifest file has decalred/desired state and has container specs, networking specs and other additional information
 - Basically kubectl applies the manifest and creates the pods
 - API Server: kubectl send manifest to API server, API server validate manifests syntax and checks for any error
@@ -540,7 +540,7 @@ and you will see your app running
 
 <img width="1790" alt="Screenshot 2024-03-21 at 11 58 30 AM" src="https://github.com/arctic-gsu/kubernetes_workshop/assets/33342277/14df0d79-90e4-4e6e-af48-c85428691818">
 
-### Multiple container in single pod:
+## Multiple container in single pod:
 We will create a namespace ns3, create a Pod with two containers, the first named todo-list using a Docker image srutsth/todo and a second container based on prom/promethrus:v2.30.3 docker image and container exposed to port 9090
 
 ```
@@ -581,4 +581,187 @@ pod/multi-container-pod created
 hpcshruti@k8s-ctrls04:~/kubenetes_dir$ kubectl get po -n ns3
 NAME                  READY   STATUS    RESTARTS   AGE
 multi-container-pod   2/2     Running   0          57m
+```
+
+
+## Creating a ML Porject and Deploying in kubernetes
+
+Be sure to first create virtual env, and install all the requirements
+if you have not created virutal environment yet:
+```
+mkdir venv
+python3 -m venv my_venv
+source my_venv/bin/activate
+```
+
+see your requirements.txt file
+```
+(my_venv) hpcshruti@k8s-ctrls04:~/my_project$ cat requirements.txt 
+blinker==1.7.0
+click==8.1.7
+flask==3.0.2
+importlib-metadata==7.1.0
+itsdangerous==2.1.2
+Jinja2==3.1.3
+joblib==1.3.2
+MarkupSafe==2.1.5
+numpy==1.24.4
+scikit-learn==1.3.2
+scipy==1.10.1
+threadpoolctl==3.4.0
+werkzeug==3.0.1
+zipp==3.18.1
+```
+install the requirements
+```
+pip install -r requirements.txt
+```
+
+write a ml script and name it ml_script.py
+```
+(my_venv) hpcshruti@k8s-ctrls04:~/my_project$ cat ml_script.py 
+from sklearn.linear_model import LinearRegression
+import joblib
+import numpy as np
+
+X = np.array([[600], [800], [1000], [1200], [1400]])  # Features (square footage)
+y = np.array([150000, 180000, 210000, 240000, 270000])  # Targets (price)
+
+model=LinearRegression()
+model.fit(X,y)
+
+joblib.dump(model,'model.pkl')
+```
+
+run: python ml_script.py to get model.pkl
+write flask for accessing through ip
+```
+(my_venv) hpcshruti@k8s-ctrls04:~/my_project$ cat flask_app.py 
+from flask import Flask, request, jsonify
+import joblib
+
+app = Flask(__name__)
+
+model = joblib.load('model.pkl')
+
+@app.route('/predict',methods=['POST'])
+def predict():
+    data = request.get_json(force=True)
+    prediction = model.predict([[700]])
+    return jsonify({'prediction':prediction[0]})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+
+
+
+Containerizing our app:
+```
+(my_venv) hpcshruti@k8s-ctrls04:~/my_project$ nano Dockerfile 
+FROM python:3.8-slim
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+EXPOSE 5000
+
+ENV FLASK_APP=flask_app.py
+ENV FLASK_RUN_HOST=0.0.0.0
+
+CMD ["flask","run"]
+```
+
+build docker file
+```
+(my_venv) hpcshruti@k8s-ctrls04:~/my_project$ sudo docker build -t my_project:1.0 .
+
+(my_venv) hpcshruti@k8s-ctrls04:~/my_project$ sudo docker run -d -p 5000:5000 my_project:1.0
+1a44547298b2d727891ee3e9707206dc88b834693a618883808195f0b90b2254
+```
+check if docker container is running with command docker ps
+```
+(my_venv) hpcshruti@k8s-ctrls04:~/my_project$ sudo docker ps
+CONTAINER ID   IMAGE                    COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+1a44547298b2   my_project:1.0           "flask run"              15 seconds ago   Up 14 seconds   0.0.0.0:5000->5000/tcp, :::5000->5000/tcp   elegant_joliot
+27eb65a4091b   srutsth/todo:1.0         "docker-entrypoint.s…"   21 hours ago     Up 21 hours     0.0.0.0:3001->3000/tcp, :::3001->3000/tcp   exciting_jones
+35647727e301   docker/getting-started   "/docker-entrypoint.…"   6 days ago       Up 6 days       0.0.0.0:82->80/tcp, :::82->80/tcp           youthful_montalcini
+```
+curl to send post request
+```
+(my_venv) hpcshruti@k8s-ctrls04:~/my_project$ curl -X POST -H "Content-Type: application/json" -d '{"square_feet": 1000}' http://localhost:5000/predict
+{"prediction":165000.00000000006}
+```
+we see the prediction value, so we can assure that our docker container is working
+
+Deploying into kubernetes. Write the deployment file.
+```
+(my_venv) hpcshruti@k8s-ctrls04:~/my_project$ cat mydeployment.yaml 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-project-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-project-app
+  template:
+    metadata:
+      labels:
+        app: my-project-app
+    spec:
+      containers:
+      - name: my-project-app-container
+        image: arcdocker.rs.gsu.edu/my_project:1.0 # Your private image
+        ports:
+        - containerPort: 5000
+      imagePullSecrets:
+      - name: myregistrysecret
+```
+deploy the yaml file
+```
+kubectl apply -f mydeployment.yaml 
+```
+remember for accessing port from outside this cluster you have to expose the port, for developement we can do this by nodeport, but for production we need to do it from loadbalancer
+```
+(my_venv) hpcshruti@k8s-ctrls04:~/my_project$ cat service.yaml 
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-project-app-service
+spec:
+  type: NodePort
+  selector:
+    app: my-project-app
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000
+```
+deploy the service
+```
+(my_venv) hpcshruti@k8s-ctrls04:~/my_project$ kubectl apply -f service.yaml 
+service/my-project-app-service created
+```
+query for svc
+```
+(my_venv) hpcshruti@k8s-ctrls04:~/my_project$ kubectl get svc
+NAME                                                      TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)                      AGE
+my-project-app-service                                    NodePort       10.100.98.55     <none>          5000:30910/TCP               1s
+todo-app                                                  NodePort       10.110.225.48    <none>          3000:31313/TCP               23h
+```
+see our our service is there you can also check for deployments by </br>
+kubectl get deployment </br>
+and pod by:</br>
+kubectl get pod</br>
+</br>
+curl to see if our kubernetes deployment is working or not
+```
+(my_venv) hpcshruti@k8s-ctrls04:~/my_project$ curl -X POST -H "Content-Type: application/json" -d '{"square_feet": 1000}' http://k8s-ctrls04.rs.gsu.edu:30910/predict
+{"prediction":165000.00000000006}
 ```
