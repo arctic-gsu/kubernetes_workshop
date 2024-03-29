@@ -806,6 +806,15 @@ curl to send post request
 ```
 we see the prediction value, so we can assure that our docker container is working
 
+Now, create a registrysecret file to store your credentials, I am naming it myregistrysecret
+```
+kubectl create secret docker-registry myregistrysecret \
+  --docker-server=arcdocker.rs.gsu.edu \ # Your Docker registry's server address
+  --docker-username=*** \ # Your Docker registry username
+  --docker-password=*** \ # Your Docker registry password
+  --docker-email=*** # Your email
+```
+
 Deploying into kubernetes. Write the deployment file.
 ```
 (my_venv) hpcshruti@k8s-ctrls04:~/my_project$ cat mydeployment.yaml 
